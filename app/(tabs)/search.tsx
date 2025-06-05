@@ -1,11 +1,12 @@
-import { View, Text, Image, FlatList, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { images } from '../../constants/images';
+import { ActivityIndicator, FlatList, Image, Text, View } from 'react-native';
 import MovieCard from '../../components/MovieCard';
-import useFetch from '../../services/useFetch';
-import { fetchMovies } from '../../services/api';
-import { icons } from '../../constants/icons';
 import SearchBar from '../../components/SearchBar';
+import { icons } from '../../constants/icons';
+import { images } from '../../constants/images';
+import { fetchMovies } from '../../services/api';
+import { updateSearchCount } from '../../services/appwrite';
+import useFetch from '../../services/useFetch';
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,23 +19,31 @@ const Search = () => {
     reset,
   } = useFetch(() => fetchMovies({ query: searchQuery }), false);
 
+  // Debounced fetching
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
       if (searchQuery.trim()) {
         await loadMovies();
+
       } else {
         reset();
       }
-    }, 500)
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
+  useEffect(()=> {
+    if (movies?.[0] && movies?.length > 0) 
+       updateSearchCount(searchQuery, movies[0]);
+
+  }, [movies])
+
   return (
-    <View className="flex-1 bg-primary">
+    <View className="flex-1 bg-primary relative">
       <Image
         source={images.bg}
-        className="flex-1 absolute w-full z-0"
+        className="absolute w-full h-full z-0"
         resizeMode="cover"
       />
 
@@ -65,7 +74,9 @@ const Search = () => {
             </View>
 
             {loading && (
-              <ActivityIndicator size="large" color="#0000ff" className="my-3" />
+              <View className="my-3">
+                <ActivityIndicator size="large" color="#0000ff" />
+              </View>
             )}
 
             {error && (
@@ -85,10 +96,10 @@ const Search = () => {
 
         ListEmptyComponent={
           !loading && !error ? (
-            <View className='mt-10 px-5' >
-                <Text className="text-center text-gray-500">
-                  {searchQuery.trim() ? 'No Movies Found' : 'Search For a movie'}
-                </Text>
+            <View className="mt-10 px-5">
+              <Text className="text-center text-gray-500">
+                {searchQuery.trim() ? 'No Movies Found' : 'Search For a movie'}
+              </Text>
             </View>
           ) : null
         }

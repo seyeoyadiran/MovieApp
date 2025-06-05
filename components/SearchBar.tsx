@@ -1,12 +1,12 @@
-import { View, Text, Image, TextInput } from 'react-native'
-import React from 'react'
-import { icons } from '../constants/icons'
+import React from 'react';
+import { Image, TextInput, View } from 'react-native';
+import { icons } from '../constants/icons';
 
 interface Props{
     placeHolder: string;
     onPress?: () => void;
-    value: string;
-    onChangeText: (text: string) => void;
+    value?: string;
+    onChangeText?: (text: string) => void;
 }
 
 const SearchBar = ({ placeHolder, onPress, value, onChangeText}: Props) => {
